@@ -64,10 +64,10 @@ def isciPodatkiTekmovalec(ime, priimek):
 def tekmovalec_indeks(indeks):
     '''Za nek indeks vrne vse poadtke o tekmovalcu.'''
     cur.execute('''
-        Select klub
+        SELECT *
         FROM Tekmovalci
-        WHERE ime = ? AND PRIIMEK = ?''',
-                (ime, priimek))
+        WHERE id = ?''',
+                (indeks,))
     return cur.fetchone()
 
 def rojstniDan(indeks):
@@ -138,9 +138,15 @@ def kategorijaTekmovalca(idTekmovalca, datum_leto):
     rojstni_mesec = int(rojstni[1])
     rojstni_dan = int(rojstni[2])
     starost = datum_leto - rojstni_leto - ((1, 1) < (rojstni_mesec, rojstni_dan))
+    cur.execute('''
+        SELECT spol
+        FROM Tekmovalci
+        WHERE id = ?''',
+                (idTekmovalca,))
+    spol = cur.fetchone()[0]
     kategorije = vseKategorije()
-    for a,b,c,_ in vseKategorije():
-        if b <= starost and starost <= c:
+    for a,b,c,d,_ in vseKategorije():
+        if b <= starost and starost <= c and d == spol:
             return a
 
 def casiTekmovalca(idTekmovalca, idSezone = None):
@@ -177,20 +183,20 @@ def uvrstitevPoKategoriji(idTekme,idKategorije):
         FROM Tekmovanja
         WHERE id = ?''',
                 (idTekme,))
-    id_sezone = cur.fetchone()[0]
+    id_sezone = cur.fetchone()[0] #id sezone, ki ga rabimo za dolocitev leta tekme
     cur.execute('''
         SELECT leto
         FROM Sezona
         WHERE id = ?''',
                 (id_sezone,))
-    leto = cur.fetchone()[0]
+    leto = cur.fetchone()[0] # leto tekme, ki ga rabimo za dolocitev kategorije, v kateri se nahajajo tekmovalci
     cur.execute('''
         SELECT id_tekmovalec, čas
         FROM Rezultati
         WHERE id_tekmovanje = ?
         ORDER BY čas''',
                 (idTekme,))
-    rezult_tekme = cur.fetchall()
+    rezult_tekme = cur.fetchall() # vsi temovalci in njihovi časi v dani tekmi
     i = 0
     while i < len(rezult_tekme):
         if kategorijaTekmovalca(rezult_tekme[i][0],leto) != idKategorije:
@@ -208,7 +214,48 @@ def uvrstitevPoKategoriji(idTekme,idKategorije):
         rezult_tekme[i] = (rezult_tekme[i][0], rezult_tekme[i][1])
     return rezult_tekme
 
-#def uvrstitviTekmovalca(idTekmovalca, idTekme):
+def uvrstitviTekmovalca(idTekmovalca, idTekme):
+    '''Vrne uvrstitev v skupnem seštevku ter uvrstitev v kategoriji nekega tekmovalca.'''
+    cur.execute('''
+        SELECT id_tekmovalec, čas
+        FROM Rezultati
+        WHERE id_tekmovanje = ?
+        ORDER BY čas''',
+                (idTekme,))
+    vsi_casi = cur.fetchall()    # seznam vseh tekmovalcev in njihovih casov na tekmi
+    # definiramo funkcijo, ki bo v urejenem seznamu vrnila naso uvrstitev
+    def dosezeno_mesto(seznam, indeks):
+        if seznam[indeks - 1][1] != seznam[indeks][1]:
+            return indeks + 1
+        else:
+            return dosezeno_mesto(seznam, indeks-1)
+    # poiscemo naso uvrstitev
+    for i in range(len(vsi_casi)):
+        if vsi_casi[i][0] == idTekmovalca:
+            v_skupnem = dosezeno_mesto(vsi_casi, i) #nasa uvrstitev
+            vsi_casi = vsi_casi[:i+1] #skrajsamo seznam, saj nas nadaljevanje ne zanima
+            break
+    cur.execute('''
+        SELECT id_sezona
+        FROM Tekmovanja
+        WHERE id = ?''',
+                (idTekme,))
+    id_sezone = cur.fetchone()[0] #id sezone, ki ga rabimo za dolocitev leta tekme
+    cur.execute('''
+        SELECT leto
+        FROM Sezona
+        WHERE id = ?''',
+                (id_sezone,))
+    leto = cur.fetchone()[0] # leto tekme, ki ga rabimo za dolocitev kategorije, v kateri se nahajajo tekmovalci
+    idKategorije = kategorijaTekmovalca(vsi_casi[-1][0],leto)
+    i = 0
+    while i < len(vsi_casi):
+        if kategorijaTekmovalca(vsi_casi[i][0],leto) != idKategorije:
+            vsi_casi.remove(vsi_casi[i])
+            i-=1
+        i+=1
+    v_kategoriji = dosezeno_mesto(vsi_casi,len(vsi_casi)-1)
+    return v_skupnem, v_kategoriji
     
 #    '''Vrne vse uvrstitve tekmovalca ali pa vse uvrstitve tekmovalca v dani sezoni, če je ta podana.'''
     
