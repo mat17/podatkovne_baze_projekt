@@ -176,6 +176,35 @@ def casiTekmovalca(idTekmovalca, idSezone = None):
                     (idTekmovalca,))
         return cur.fetchall()
 
+# definiramo funkcijo, ki bo v urejenem seznamu vrnila naso uvrstitev
+def dosezeno_mesto(seznam, indeks):
+    if indeks == 0:
+        return 1
+    elif seznam[indeks - 1][1] != seznam[indeks][1]:
+        return indeks + 1
+    else:
+        return dosezeno_mesto(seznam, indeks-1)
+
+def uvrstitevNaTekmi(idTekme):
+    '''Vrne seznam tuplov, kjer je prva vrednost uvrstitev, druga pa id tekmovalca.'''
+    cur.execute('''
+        SELECT id_tekmovalec, čas
+        FROM Rezultati
+        WHERE id_tekmovanje = ?
+        ORDER BY čas''',
+                (idTekme,))
+    vsi_casi = cur.fetchall()
+    print(vsi_casi)
+    for i in range(len(vsi_casi)):
+        if vsi_casi[i][-1] != vsi_casi[i-1][-1]:
+            vsi_casi[i] = (i+1,vsi_casi[i][0],vsi_casi[i][1])
+        else:
+            vsi_casi[i] = (vsi_casi[i-1][0],vsi_casi[i][0],vsi_casi[i][1])
+    for i in range(len(vsi_casi)):
+        vsi_casi[i] = (vsi_casi[i][0], vsi_casi[i][1])
+    return vsi_casi
+
+
 def uvrstitevPoKategoriji(idTekme,idKategorije):
     '''Vrne tuple, kjer je prva vrednost id tekmovalca, druga pa njegova uvrstitev'''
     cur.execute('''
@@ -209,7 +238,7 @@ def uvrstitevPoKategoriji(idTekme,idKategorije):
         if rezult_tekme[i][-1] != rezult_tekme[i-1][-1]:
             rezult_tekme[i] = (i+1,rezult_tekme[i][0],rezult_tekme[i][1])
         else:
-            rezult_tekme[i] = (rezult_tekme[i-1][1],rezult_tekme[i][0],rezult_tekme[i][1])
+            rezult_tekme[i] = (rezult_tekme[i-1][0],rezult_tekme[i][0],rezult_tekme[i][1])
     for i in range(len(rezult_tekme)):
         rezult_tekme[i] = (rezult_tekme[i][0], rezult_tekme[i][1])
     return rezult_tekme
@@ -223,12 +252,6 @@ def uvrstitviTekmovalca(idTekmovalca, idTekme):
         ORDER BY čas''',
                 (idTekme,))
     vsi_casi = cur.fetchall()    # seznam vseh tekmovalcev in njihovih casov na tekmi
-    # definiramo funkcijo, ki bo v urejenem seznamu vrnila naso uvrstitev
-    def dosezeno_mesto(seznam, indeks):
-        if seznam[indeks - 1][1] != seznam[indeks][1]:
-            return indeks + 1
-        else:
-            return dosezeno_mesto(seznam, indeks-1)
     # poiscemo naso uvrstitev
     for i in range(len(vsi_casi)):
         if vsi_casi[i][0] == idTekmovalca:
@@ -256,8 +279,51 @@ def uvrstitviTekmovalca(idTekmovalca, idTekme):
         i+=1
     v_kategoriji = dosezeno_mesto(vsi_casi,len(vsi_casi)-1)
     return v_skupnem, v_kategoriji
-    
-#    '''Vrne vse uvrstitve tekmovalca ali pa vse uvrstitve tekmovalca v dani sezoni, če je ta podana.'''
+
+def uvrstitveTekmovalcaVSezoni(idTekmovalca, idSezone):
+    cur.execute('''
+        SELECT Tekmovanja.id
+        FROM Rezultati
+        JOIN Tekmovanja ON (Tekmovanja.id = Rezultati.id_tekmovanje)
+        WHERE Tekmovanja.id_sezona = ? AND Rezultati.id_tekmovalec = ?
+        ORDER BY datum''',
+                (idSezone, idTekmovalca))
+    vse_tekme = cur.fetchall()
+    for i in range(len(vse_tekme)):
+        vse_tekme[i]=vse_tekme[i][0]
+    vse_uvrstitve = []
+    for indeks in vse_tekme:
+        vse_uvrstitve.append(uvrstitviTekmovalca(idTekmovalca, indeks))
+    return vse_uvrstitve
+
+def dosezeneTockeTekmovalcaVSezoni(idTekmovalca, idSezone):
+    '''Vrne stevilo tock v skupnem sestevku ter v kategoriji v dani sezoni.'''
+    tocke_skupno = []
+    tocke_kategorija = []
+    uvrstitve = uvrstitveTekmovalcaVSezoni(idTekmovalca, idSezone)
+    for a,b in uvrstitve:
+        cur.execute('''
+            SELECT st_tock
+            FROM Točkovanje
+            WHERE uvrstitev = ?''',
+                    (a,))
+        tocke = cur.fetchone()
+        if tocke == None:
+            tocke_skupno.append(0)
+        else:
+            tocke_skupno.append(tocke[0])
+        cur.execute('''
+            SELECT st_tock
+            FROM Točkovanje
+            WHERE uvrstitev = ?''',
+                    (b,))
+        tocke = cur.fetchone()
+        if tocke == None:
+            tocke_kategorija.append(0)
+        else:
+            tocke_kategorija.append(tocke[0])
+    return sum(tocke_skupno), sum(tocke_kategorija)
+
     
 
 ############ DODAJANJE ######################
