@@ -44,20 +44,22 @@ def vseKategorije():
 ##    return cur.fetchall()
 
 def podatkiTekmovalec(ime, priimek):
-    '''Za neko ime in priimek vrne klub, v katerega je včlanjen tekmovalec'''
+    '''Za neko ime in priimek vrne podatke o tekmovalcu.'''
     cur.execute('''
         SELECT *
         FROM Tekmovalci
-        WHERE ime = ? AND PRIIMEK = ?''',
+        WHERE LOWER(ime) = LOWER(?) AND LOWER(priimek) = LOWER(?)''',
                 (ime, priimek))
     return cur.fetchone()
 
 def isciPodatkiTekmovalec(ime, priimek):
-    '''Za neko ime in priimek vrne klub, v katerega je včlanjen tekmovalec'''
+    '''Naredimo poizvedbo o tekmovalcih. Ne vemo točnega imena / priimka.'''
+    ime = '%' + ime + '%'
+    priimek = '%' + priimek + '%'
     cur.execute('''
-        SELECT *
+        SELECT ime, priimek, rojstni
         FROM Tekmovalci
-        WHERE ime LIKE ? AND PRIIMEK LIKE ?''',
+        WHERE ime LIKE ? AND priimek LIKE ?''',
                 (ime, priimek))
     return cur.fetchall()
 
@@ -78,6 +80,21 @@ def rojstniDan(indeks):
         WHERE id = ?''',
                 (indeks,))
     return cur.fetchone()[0].split('-')
+
+def isciIDTekme(kraj, dolzina, leto):
+    '''Za podan kraj, dolžino in leto poiščemo ustrezen indeks tekme.'''
+    # naredimo case insensitive poizvedbo z LOWER
+    cur.execute('''
+        SELECT Tekmovanja.id
+        FROM Tekmovanja
+        JOIN Sezona ON (Sezona.id = Tekmovanja.id_sezona)
+        WHERE LOWER(Tekmovanja.kraj) = LOWER(?) AND Tekmovanja.dolzina = ? AND Sezona.leto = ?''',
+                (kraj, dolzina, leto, ))
+    vrni = cur.fetchone()
+    if vrni == None:
+        return None
+    else:
+        return vrni[0]
 
 ##def datumTekme(indeks):
 ##    '''Za id tekme vrne [leto, mesec, dan] dogodka.'''
@@ -114,7 +131,11 @@ def indeksSezone(letnica):
         FROM Sezona
         WHERE leto = ?''',
                 (letnica,))
-    return cur.fetchone()[0]
+    indeks = cur.fetchone()
+    if indeks == None:
+        return None
+    else:
+        return indeks[0]
 
 ##def starostTekmovalca(idTekmovalca, idTekme):
 ##    '''Vrne starost tekmovalca na dan tekme.'''
@@ -324,8 +345,223 @@ def dosezeneTockeTekmovalcaVSezoni(idTekmovalca, idSezone):
             tocke_kategorija.append(tocke[0])
     return sum(tocke_skupno), sum(tocke_kategorija)
 
-    
+def poisciTekmovalcaNaLestvici(id_sezona, id_tekmovalec):
+    '''Poišče vse podatke o tekmovalcu na lestvici.'''
+    cur.execute('''
+        SELECT *
+        FROM Lestvica
+        WHERE id_sezona = ? AND id_tekmovalec = ?''',
+                (id_sezona, id_tekmovalec))
+    return cur.fetchone()
+
+def poglejLestvicoVKategoriji(leto, id_kategorija):
+    '''Za dano sezono in kategorijo nam vrne uvrstitve na lestvici v kategoriji.'''
+    id_sezona = indeksSezone(leto)
+    cur.execute('''
+        SELECT Lestvica.uvrstitev_v_kategoriji, Tekmovalci.ime, Tekmovalci.priimek, Lestvica.st_tock_kategorija
+        FROM Lestvica
+        JOIN Tekmovalci ON (Tekmovalci.id = Lestvica.id_tekmovalec)
+        WHERE Lestvica.id_sezona = ? AND Lestvica.id_kategorija = ?
+        ORDER BY Lestvica.uvrstitev_v_kategoriji''',
+                (id_sezona, id_kategorija))
+    return cur.fetchall()
+
+def poglejLestvicoSkupno(leto):
+    '''Za dano sezono nam vrne lestvico.'''
+    id_sezona = indeksSezone(leto)
+    cur.execute('''
+        SELECT Lestvica.uvrstitev_skupno, Tekmovalci.ime, Tekmovalci.priimek, Lestvica.st_tock_skupno
+        FROM Lestvica
+        JOIN Tekmovalci ON (Tekmovalci.id = Lestvica.id_tekmovalec)
+        WHERE Lestvica.id_sezona = ?
+        ORDER BY Lestvica.uvrstitev_skupno''',
+                (id_sezona,))
+    return cur.fetchall()
 
 ############ DODAJANJE ######################
 
-#def dodaj
+def dodajTekmovalca(ime, priimek, rd, spol, klub):
+    '''Dodamo tekmovalca v bazo.'''
+    cur.execute('''
+        SELECT *
+        FROM Tekmovalci
+        WHERE ime = ? AND priimek = ? AND rojstni = ?''',
+                (ime, priimek, rd))
+    preveri = cur.fetchone()
+    if preveri == None:
+        return None
+    else:
+        cur.execute('''
+            INSERT INTO Tekmovalci (ime, priimek, rojstni, spol, klub)
+            VALUES (?, ?, ?)''', (ime, priimek, rd, spol, klub))
+        con.commit()
+
+def posodobiTekmovalca(indeks, ime, priimek, rd, spol, klub):
+    '''Popravimo podatke o tekmovalcu'''
+    cur.execute('''
+        UPDATE Tekmovalci
+        SET ime = ?, priimek = ?, rojstni = ?, spol = ?, klub = ?
+        WHERE id = ?''',
+                (ime, priimek, rd, spol, klub, indeks))
+    con.commit()
+
+def dodajTekmovanje(kraj, datum, dolzina):
+    '''Dodamo tekmovanje v bazo. Datum naj bo oblike 'leto-mm-dd'.'''
+    leto = datum.split('-')[0]
+    id_sezone = indeksSezone(leto)
+    cur.execute('''
+        INSERT INTO Tekmovanja (id_sezona, kraj, datum, dolzina)
+        VALUES (?, ?, ?, ?)''',
+                (id_sezone, kraj, datum, dolzina))
+    con.commit()
+
+def posodobiTekmovanje(indeks, kraj, datum, dolzina):
+    '''Popravimo podatke o tekmovanju.'''
+    cur.execute('''
+        UPDATE Tekmovanja
+        SET kraj = ?, datum = ?, dolžina = ?
+        WHERE id = ?''',
+                (kraj, datum, dolzina, indeks))
+    con.commit()
+
+def dodajRezultatID(id_tekmovalec, id_tekmovanje, cas, uvrstitev):
+    '''Dodamo dosežek nekega tekmovalca na neki tekmi v bazo. Vemo ID tekme in ID tekmovalca'''
+    cur.execute('''
+        INSERT INTO Rezultati (id_tekmovalec, id_tekmovanje, čas, uvrstitev)
+        VALUES (?, ?, ?, ?)''',
+                (id_tekmovalec, id_tekmovanje, cas, uvrstitev))
+    con.commit()
+
+def dodajRezultatOpisno(ime, priimek, kraj, dolzina, leto, cas, uvrstitev):
+    id_tekmovalec = podatkiTekmovalec(ime, priimek)
+    idTekmovanje = poisciIDTekme(kraj, dolzina, leto)
+    dodajRezultatID(id_tekmovalec, idTekmovanje, cas, uvrstitev)
+
+def dodajSezono(leto):
+    '''Dodamo novo sezono.'''
+    if indeksSezone(leto) == None:
+        cur.execute('''
+            INSERT INTO Sezona (leto)
+            VALUES (?)''',
+                    (leto,))
+        con.commit()
+
+def dodajTekmovalcaNaLestvico(id_sezona, id_tekmovalec):
+    '''Dodamo novega tekmovalca na lestvico.'''
+    if poisciTekmovalcaNaLestvici(id_sezona, id_tekmovalec) == None:
+        id_kategorija = kategorijaTekmovalca(id_tekmovalec, id_sezona)
+        cur.execute('''
+            INSERT INTO Lestvica (id_sezona, id_tekmovalec, id_kategorija, st_tock_skupno, st_tock:kategorija)
+            VALUES (?, ?, ?, ?)''',
+                    (id_sezona, id_tekmovalec, id_kategorija, 0, 0))
+        con.commit()
+
+def dodajVseTekmovalceNaLestvico():
+    '''Doda vse tekmovalce iz baze tekmovalci v tabelo lestvica.'''
+    # To bomo potrebovali samo 'prvič', ker je naša tabela 'lestvica' še prazna
+    sezone = []
+    cur.execute('''
+        SELECT id
+        FROM Sezona''')
+    for i in cur.fetchall():
+        sezone.append(i[0])
+    indeksi = []
+    cur.execute('''
+        SELECT id
+        FROM Tekmovalci''')
+    for i in cur.fetchall():
+        indeksi.append(i[0])
+    for j in sezone:
+        for i in indeksi:
+            dodajTekmovalcaNaLestvico(j,i)
+
+def posodobiTocke(id_tekmovalca, id_sezone):
+    '''Posodobimo število točk nekega tekmovalca na lestvici.'''
+    tocke_v_sezoni = dosezeneTockeTekmovalcaVSezoni(id_tekmovalca, id_sezone)
+    cur.execute('''
+        UPDATE Lestvica
+        SET st_tock_skupno = ?, st_tock_kategorija = ?
+        WHERE id_sezona = ? AND id_tekmovalec = ?''',
+                (tocke_v_sezoni[0],tocke_v_sezoni[1],id_sezone,id_tekmovalca))
+    con.commit()
+
+# ta ukaz lahko zaženemo po vsaki tekmi.
+# bolje bi bilo, da bi imeli v tabeli še stolpec 'zadnja posodobitev'
+# in bi tako vedeli, da moramo od določene tekme naprej le dodati rezultate
+# prednost našega načina pa je ta, da so vsi podatki v sezoni zagotovo posodobljeni
+def posodobiVseTockeVSezoni(leto):
+    id_sezona = indeksSezone(leto)
+    tekmovalci = []
+    cur.execute('''
+        SELECT id_tekmovalec
+        FROM Lestvica
+        WHERE id_sezona = ?''',
+                (id_sezona,))
+    for i in cur.fetchall():
+        tekmovalci.append(i[0])
+    for i in tekmovalci:
+        posodobiTocke(i, id_sezona)
+
+def posodobiUvrstitveKategorija(leto):
+    id_sezona = indeksSezone(leto)
+    kategorije = []
+    cur.execute('''
+        SELECT id_kategorija
+        FROM Lestvica
+        WHERE id_sezona = ?''',
+                (id_sezona,))
+    for i in cur.fetchall():
+        kategorije.append(i[0])
+    kategorije = list(set(kategorije))
+    for kat in kategorije:
+        cur.execute('''
+            SELECT id_tekmovalec, st_tock_kategorija
+            FROM Lestvica
+            WHERE id_sezona = ? AND id_kategorija = ?
+            ORDER BY st_tock_kategorija DESC''',
+                    (id_sezona, kat))
+        tekmovalci = cur.fetchall()
+        i = 0
+        for (indeks,_) in tekmovalci:
+            uvrstitev_kat = dosezeno_mesto(tekmovalci, i)
+            cur.execute('''
+                UPDATE Lestvica
+                SET uvrstitev_v_kategoriji = ?
+                WHERE id_sezona = ? AND id_tekmovalec = ?''',
+                        (uvrstitev_kat, id_sezona, indeks))
+            con.commit()
+            i += 1
+
+def posodobiUvrstitveSkupno(leto):
+    id_sezona = indeksSezone(leto)
+    cur.execute('''
+        SELECT id_tekmovalec, st_tock_skupno
+        FROM Lestvica
+        WHERE id_sezona = ?
+        ORDER BY st_tock_skupno DESC''',
+                (id_sezona,))
+    tekmovalci = cur.fetchall()
+    i = 0
+    for (indeks,_) in tekmovalci:
+        uvrstitev_skupno = dosezeno_mesto(tekmovalci, i)
+        cur.execute('''
+            UPDATE Lestvica
+            SET uvrstitev_skupno = ?
+            WHERE id_sezona = ? AND id_tekmovalec = ?''',
+                    (uvrstitev_skupno, id_sezona, indeks))
+        con.commit()
+        i += 1
+
+# ta ukaz lahko zaženemo po vsaki tekmi.
+def posodobiUvrstitve(leto):
+    posodobiUvrstitveKategorija(leto)
+    posodobiUvrstitveLeto(leto)
+
+
+# mogoče bi bilo celo bolj pametno voditi moške in ženske rezultate ločeno
+# tako bi bilo lažje narediti skupno točkovanje po spolih
+# pa tudi skupno skupno ne bi bilo pretežko
+# tudi starostne kategorije ne bi bile odvisne od spolov
+
+# še ena možna rešitev je, da bi tekmovalcu avtomatsko priredil dve kategorije
+# pri čemer bi moral ustvarit še dve kategoriji - skupno moško in skupno žensko
