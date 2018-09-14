@@ -7,6 +7,8 @@
     <table id="tabele" class="w3-table-all">
         <thead>
         <tr>
+            <th scope="col">ID</th>
+            <th scope="col">ID sezone</th>
             <th scope="col">Datum</th>
             <th scope="col">Kraj</th>
             <th scope="col">Dolžina</th>
@@ -14,9 +16,10 @@
         </thead>
         <tbody>
 
-            % tekmovanja.sort(key = lambda x:x[3])
-            % for _, _, kraj, datum, dolzina in tekmovanja:
+            % for id, id_sezone, kraj, datum, dolzina in tekmovanja:
             <tr>
+                <td>{{id}}</td>
+                <td>{{id_sezone}}</td>
                 <td>{{datum}}</td>
                 <td>{{kraj}}</td>
                 <td>{{dolzina}}</td>

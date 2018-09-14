@@ -7,24 +7,23 @@
     <table id="tabele" class="w3-table-all">
         <thead>
         <tr>
+            <th scope="col">ID</th>
             <th scope="col">Ime</th>
             <th scope="col">Priimek</th>
-            <th scope="col">Letnik</th>
+            <th scope="col">Rojstni datum</th>
             <th scope="col">Spol</th>
             <th scope="col">Klub</th>
         </tr>
         </thead>
         <tbody>
 
-            % tekmovalci.sort(key = lambda x:x[1])
-            % for _, ime, priimek, rojstni, spol, klub in tekmovalci:
-            % rojstni = rojstni[0:4]
-            % print(rojstni)
+            % for id, ime, priimek, spol, rojstni, klub in tekmovalci:
             <tr>
+                <td>{{id}}</td>
                 <td>{{ime}}</td>
                 <td>{{priimek}}</td>
-                <td>{{rojstni[0:4]}}</td>
                 <td>{{spol}}</td>
+                <td>{{rojstni}}</td>
                 <td>{{klub}}</td>
             </tr>
             % end

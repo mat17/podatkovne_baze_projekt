@@ -24,6 +24,11 @@ def izpisTekmovalcev():
     tekmovalci = modeli.vsiTekmovalci()
     return template('izpisTekmovalcev.html', tekmovalci=tekmovalci)
 
+@get('/admin/izpis_tekmovalcev')
+def izpisTekmovalcev():
+    tekmovalci = modeli.vsiTekmovalci()
+    return template('admin_izpis_tekmovalcev.html', tekmovalci=tekmovalci)
+
 @get('/admin/dodaj_tekmovalca')
 def stranDodajTekmovalca():
     '''Prikaže stran za dodajanje novih tekmovalcev.'''
@@ -69,6 +74,11 @@ def posodobiTekmovalca():
 def izpisTekmovanj():
     tekmovanja = modeli.vseTekme()
     return template('izpis_tekmovanj.html', tekmovanja=tekmovanja)
+
+@get('/admin/izpis_tekmovanj')
+def izpisTekmovanj():
+    tekmovanja = modeli.vseTekme()
+    return template('admin_izpis_tekmovanj.html', tekmovanja=tekmovanja)
 
 @get('/admin/dodaj_tekmovanje')
 def stranDodajTekmovanje():
@@ -168,6 +178,19 @@ def stranRezultatiTekmovanja(sezona):
     id_kategorije = int(request.forms.id_kategorije)
     rezultati = modeli.rezultatiTekmovanjaKategorija(id_tekme, id_kategorije)
     return template('rezultati_tekmovanja_kategorija.html', rezultati=rezultati)
+
+@get('/admin/naj_posodobi')
+def izpisTekmovanj():
+    return template('admin_posodobi.html')
+
+@post('/admin/posodobi')
+def posodobi():
+    try:
+        modeli.posodobiUvrstitve()
+        print('Posodobljeno!')
+    except Exception as e:
+        print("Napaka!!!")
+        print(e)
 
 # Poženemo strežnik na vhodu 8080, glej http://localhost:8080/
 run(host='localhost', port=8080, reloader=True, debug=True)

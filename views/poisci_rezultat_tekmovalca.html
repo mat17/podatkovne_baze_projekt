@@ -24,6 +24,7 @@
 
             <tr>
                 <select name="id_tekmovalca">
+                    %tekmovalci.sort(key = lambda x:x[1])
                     %for id, ime, priimek, _, _, _  in tekmovalci:
                     <option value="{{id}}">{{ime}} {{priimek}}</option>
                     %end
