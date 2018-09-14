@@ -155,7 +155,19 @@ def stranRezultatiTekmovanja(sezona):
     rezultati = modeli.vsiRezultatiTekmovanja(id_tekme)
     return template('rezultati_tekmovanja.html', rezultati=rezultati)
 
+@get('/rezultati_tekmovanja_kategorija')
+def stranIzberiRezultateTekmovanjeKategorija():
+    tekme = modeli.vseTekme()
+    kategorije = modeli.vseKategorije()
+    return template('izberi_rezultat_tekmovanja_kategorija.html', tekme=tekme, kategorije=kategorije)
 
+@post('/rezultati_tekmovanja_kategorija/<sezona>')
+def stranRezultatiTekmovanja(sezona):
+    ''''''
+    id_tekme = int(request.forms.id_tekmovanja)
+    id_kategorije = int(request.forms.id_kategorije)
+    rezultati = modeli.rezultatiTekmovanjaKategorija(id_tekme, id_kategorije)
+    return template('rezultati_tekmovanja_kategorija.html', rezultati=rezultati)
 
 # Poženemo strežnik na vhodu 8080, glej http://localhost:8080/
 run(host='localhost', port=8080, reloader=True, debug=True)

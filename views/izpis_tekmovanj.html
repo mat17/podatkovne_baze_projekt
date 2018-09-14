@@ -7,19 +7,17 @@
     <table id="tabele" class="w3-table-all">
         <thead>
         <tr>
-            <th scope="col">Indeks</th>
-            <th scope="col">Kraj</th>
             <th scope="col">Datum</th>
+            <th scope="col">Kraj</th>
             <th scope="col">Dolžina</th>
         </tr>
         </thead>
         <tbody>
 
-            % for indeks, _, kraj, datum, dolzina in tekmovanja:
+            % for _, _, kraj, datum, dolzina in tekmovanja:
             <tr>
-                <td>{{indeks}}</td>
-                <td>{{kraj}}</td>
                 <td>{{datum}}</td>
+                <td>{{kraj}}</td>
                 <td>{{dolzina}}</td>
             </tr>
             % end

@@ -127,14 +127,29 @@ def isciIDTekme(kraj, dolzina, leto):
 def vsiRezultatiTekmovanja(indeks):
     '''Poisce vse rezultate dosezene na tem tekmovanju'''
     cur.execute('''
-      SELECT Lestvica.id_kategorija, Rezultati.čas, Tekmovalci.ime, Tekmovalci.priimek
+      SELECT Kategorije.oznaka, Rezultati.čas, Tekmovalci.ime, Tekmovalci.priimek
       FROM Rezultati
       JOIN Tekmovanja ON (Tekmovanja.id = Rezultati.id_tekmovanje)
       JOIN Tekmovalci ON (Tekmovalci.id = Rezultati.id_tekmovalec)
       JOIN Lestvica ON (Lestvica.id_tekmovalec = Tekmovalci.id AND Lestvica.id_sezona = Tekmovanja.id_sezona)
+      JOIN Kategorije ON (Kategorije.id = Lestvica.id_kategorija)
       WHERE Rezultati.id_tekmovanje = ?
       ORDER BY Rezultati.čas''',
                 (indeks,))
+    return cur.fetchall()
+
+def rezultatiTekmovanjaKategorija(id_tekmovanja, id_kategorije):
+    '''Poisce vse rezultate dosezene na tem tekmovanju'''
+    cur.execute('''
+      SELECT Kategorije.oznaka, Rezultati.čas, Tekmovalci.ime, Tekmovalci.priimek
+      FROM Rezultati
+      JOIN Tekmovanja ON (Tekmovanja.id = Rezultati.id_tekmovanje)
+      JOIN Tekmovalci ON (Tekmovalci.id = Rezultati.id_tekmovalec)
+      JOIN Lestvica ON (Lestvica.id_tekmovalec = Tekmovalci.id AND Lestvica.id_sezona = Tekmovanja.id_sezona)
+      JOIN Kategorije ON (Kategorije.id = Lestvica.id_kategorija)
+      WHERE Rezultati.id_tekmovanje = ? AND Kategorije.id = ?
+      ORDER BY Rezultati.čas''',
+                (id_tekmovanja, id_kategorije))
     return cur.fetchall()
 
 ##def datumTekme(indeks):
