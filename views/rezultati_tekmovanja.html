@@ -1,0 +1,35 @@
+%rebase('osnova.html', naslov='Rezultati tekme')
+
+
+<h1 class="w3-amber">Rezultati tekmovanja</h1>
+<p>
+    Vsi rezultati izbranega tekmovanja.
+</p>
+<table id="tabele" class="w3-table-all">
+    <thead>
+        <tr>
+            <th scope="col">Mesto</th>
+            <th scope="col">Kategorija</th>
+            <th scope="col">Čas</th>
+            <th scope="col">Ime</th>
+            <th scope="col">Priimek</th>
+        </tr>
+    </thead>
+    <tbody>
+        %for i in range(1,len(rezultati)+1):
+        %    kategorija, cas, ime, priimek = rezultati[i-1]
+        <tr>
+            <td align="center">{{i}}</td>
+            <td align="center">{{kategorija}}</td>
+            <td align="center">{{cas}}</td>
+            <td align="center">{{ime}}</td>
+            <td align="center">{{priimek}}</td>
+        </tr>
+        %end
+    </tbody>
+
+</table>
+<p><br></p>
+<form method="get" action="/">
+    <button class="w3-button w3-amber">Nazaj</button>
+</form>

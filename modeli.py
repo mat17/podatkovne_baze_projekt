@@ -89,6 +89,16 @@ def tekmovalec_indeks(indeks):
                 (indeks,))
     return cur.fetchone()
 
+def imeInPriimek(indeks):
+    '''Za nek indeks vrne ime in priimek.'''
+    cur.execute('''
+        SELECT ime, priimek
+        FROM Tekmovalci
+        WHERE id = ?''',
+                (indeks,))
+    imepriimek = cur.fetchone()
+    return str(imepriimek[0]) +" "+ str(imepriimek[1])
+
 def rojstniDan(indeks):
     '''Za id tekmovalca vrne njegov rojstni datum.'''
     cur.execute('''
@@ -112,6 +122,20 @@ def isciIDTekme(kraj, dolzina, leto):
         return None
     else:
         return vrni[0]
+
+
+def vsiRezultatiTekmovanja(indeks):
+    '''Poisce vse rezultate dosezene na tem tekmovanju'''
+    cur.execute('''
+      SELECT Lestvica.id_kategorija, Rezultati.čas, Tekmovalci.ime, Tekmovalci.priimek
+      FROM Rezultati
+      JOIN Tekmovanja ON (Tekmovanja.id = Rezultati.id_tekmovanje)
+      JOIN Tekmovalci ON (Tekmovalci.id = Rezultati.id_tekmovalec)
+      JOIN Lestvica ON (Lestvica.id_tekmovalec = Tekmovalci.id AND Lestvica.id_sezona = Tekmovanja.id_sezona)
+      WHERE Rezultati.id_tekmovanje = ?
+      ORDER BY Rezultati.čas''',
+                (indeks,))
+    return cur.fetchall()
 
 ##def datumTekme(indeks):
 ##    '''Za id tekme vrne [leto, mesec, dan] dogodka.'''
@@ -395,6 +419,22 @@ def poglejLestvicoSkupno(leto):
                 (id_sezona,))
     return cur.fetchall()
 
+#uvrstitveTekmovalcaVSezoni(idTekmovalca,idSezone) + casiTekmovalca
+def casiInUvrstitve(idTekmovalca, idSezone):
+    casi = casiTekmovalca(idTekmovalca, idSezone)
+    uvrstitve = uvrstitveTekmovalcaVSezoni(idTekmovalca,idSezone)
+    vrni = []
+    i = 0
+    while i < len(casi):
+        tekmovalec = []
+        for j in casi[i]:
+            tekmovalec.append(j)
+        for j in uvrstitve[i]:
+            tekmovalec.append(j)
+        vrni.append(tekmovalec)
+        i += 1
+    return vrni
+
 ############ DODAJANJE ######################
 
 def dodajTekmovalca(ime, priimek, rd, spol, klub):
@@ -441,18 +481,18 @@ def posodobiTekmovanje(indeks, kraj, datum, dolzina):
                 (kraj, datum, dolzina, indeks))
     con.commit()
 
-def dodajRezultatID(id_tekmovalec, id_tekmovanje, cas, uvrstitev):
+def dodajRezultatID(id_tekmovalec, id_tekmovanje, cas):
     '''Dodamo dosežek nekega tekmovalca na neki tekmi v bazo. Vemo ID tekme in ID tekmovalca'''
     cur.execute('''
-        INSERT INTO Rezultati (id_tekmovalec, id_tekmovanje, čas, uvrstitev)
-        VALUES (?, ?, ?, ?)''',
-                (id_tekmovalec, id_tekmovanje, cas, uvrstitev))
+        INSERT INTO Rezultati (id_tekmovalec, id_tekmovanje, čas)
+        VALUES (?, ?, ?)''',
+                (id_tekmovalec, id_tekmovanje, cas))
     con.commit()
 
-def dodajRezultatOpisno(ime, priimek, kraj, dolzina, leto, cas, uvrstitev):
+def dodajRezultatOpisno(ime, priimek, kraj, dolzina, leto, cas):
     id_tekmovalec = podatkiTekmovalec(ime, priimek)
     idTekmovanje = isciIDTekme(kraj, dolzina, leto)
-    dodajRezultatID(id_tekmovalec, idTekmovanje, cas, uvrstitev)
+    dodajRezultatID(id_tekmovalec, idTekmovanje, cas)
 
 def dodajSezono(leto):
     '''Dodamo novo sezono.'''
