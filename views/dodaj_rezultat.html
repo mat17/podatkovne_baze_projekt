@@ -1,0 +1,51 @@
+%rebase('osnova.html', naslov='Nov rezultat')
+
+
+<h1 class="naslov">Dodaj rezultat</h1>
+<p>
+    Vpiši id tekmovalca in id tekme ter čas, ki ga je dani tekmovalec dosegel na tej tekmi.
+</p>
+
+<div>
+    <form method="POST" action="/admin/nov_rezultat">
+        <table>
+            <tr>
+                <td>
+                    Id tekmovalca:
+                </td>
+                <td>
+                    <input type="text" name="id_tekmovalca" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Id tekme:
+                </td>
+                <td>
+                    <input type="text" name="id_tekme" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Čas:
+                </td>
+                <td>
+                    <input type="text" name="cas" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td>
+                    <input type="submit" value="Dodaj nov rezultat" name="dodaj" class="w3-button w3-orange"/>
+                </td>
+            </tr>
+        </table>
+
+    </form>
+</div>
+
+<form method="get" action="/admin">
+    <button class="gumb">Na administratorsko stran</button>
+</form>

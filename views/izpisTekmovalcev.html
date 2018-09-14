@@ -1,0 +1,39 @@
+%rebase('osnova.html', naslov='Tekmovalci')
+
+
+<h1 class="w3-amber">Tekmovalci</h1>
+
+
+    <table id="tabele">
+        <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Ime</th>
+            <th scope="col">Priimek</th>
+            <th scope="col">Rojstni datum</th>
+            <th scope="col">Spol</th>
+            <th scope="col">Klub</th>
+        </tr>
+        </thead>
+        <tbody>
+
+            % for id, ime, priimek, spol, rojstni, klub in tekmovalci:
+            <tr>
+                <td>{{id}}</td>
+                <td>{{ime}}</td>
+                <td>{{priimek}}</td>
+                <td>{{spol}}</td>
+                <td>{{rojstni}}</td>
+                <td>{{klub}}</td>
+            </tr>
+            % end
+
+        </tbody>
+    </table>
+
+
+<form method="get" action="/">
+    <button class="w3-button w3-aqua">Nazaj</button>
+</form>
+
+

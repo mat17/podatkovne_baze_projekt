@@ -1,0 +1,43 @@
+%rebase('osnova.html', naslov='Iskanje rezultata')
+
+
+<h1 class="naslov">Iskanje rezultata sezone</h1>
+<p>
+    Poišči vse rezultate v želeni sezoni.
+    {{id_sezone}}
+</p>
+<table id="tabele">
+    <thead>
+        <tr>
+            <th scope="col">Indeks</th>
+            <th scope="col">Sezona</th>
+            <th scope="col">Kraj</th>
+            <th scope="col">Datum</th>
+            <th scope="col">Dolžina</th>
+        </tr>
+    </thead>
+    <tbody>
+        %for indeks, id_sezone, kraj, datum, dolzina in tekme:
+        <tr>
+            <td>{{indeks}}</td>
+            <td>{{id_sezone}}</td>
+            <td>{{kraj}}</td>
+            <td>{{datum}}</td>
+            <td>{{dolzina}}</td>
+        </tr>
+        %end
+        %for datum, kraj, dolzina, cas in udelezba:
+        <tr>
+            <td>{{datum}}</td>
+            <td>{{kraj}}</td>
+            <td>{{dolzina}}</td>
+            <td>{{cas}}</td>
+        </tr>
+        %end
+    </tbody>
+</table>
+
+
+<form method="get" action="/admin">
+    <button class="gumb">Na administratorsko stran</button>
+</form>

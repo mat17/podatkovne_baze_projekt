@@ -1,0 +1,44 @@
+%rebase('osnova.html', naslov='Iskanje rezultata')
+
+
+<h1 class="naslov">Iskanje rezultata</h1>
+
+<p>
+    Poišči vse rezultate v želeni sezoni.
+</p>
+
+
+<div>
+    <form method="POST" action="/admin/poisci_rezultat/določena_sezona">
+        <table>
+            <tr>
+                <select name="leto_sezone" id="leto_sezone">
+                    %for id, leto in sezone:
+                    <option value="{{id}}">{{leto}}</option>
+                    %end
+                </select>
+
+                <!--<input type="hidden" value="Neko leto sezone" name="id" id="id">-->
+
+            </tr>
+
+            <tr>
+                <select name="id_tekmovalca">
+                    %for id, ime, priimek, _, _, _  in tekmovalci:
+                    <option value="{{id}}">{{ime}} {{priimek}}</option>
+                    %end
+                </select>
+            </tr>
+            <td>
+                <input type="submit" value="Poišči rezultate v sezoni" name="poisci" class="w3-button w3-orange"/>
+                <!--onclick="document.getElementById('id').value = document.getElementById('leto_sezone').value"/>-->
+            </td>
+            </tr>
+        </table>
+
+    </form>
+</div>
+
+<form method="get" action="/admin">
+    <button class="gumb">Na administratorsko stran</button>
+</form>

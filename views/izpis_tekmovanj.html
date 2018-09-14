@@ -1,0 +1,43 @@
+%rebase('osnova.html', naslov='Tekmovanja')
+
+
+<h1 class="w3-amber">Tekmovanja</h1>
+
+
+    <table id="tabele">
+        <thead>
+        <tr>
+            <th scope="col">Indeks</th>
+            <th scope="col">Sezona</th>
+            <th scope="col">Kraj</th>
+            <th scope="col">Datum</th>
+            <th scope="col">Dolžina</th>
+        </tr>
+        </thead>
+        <tbody>
+
+            % for indeks, id_sezone, kraj, datum, dolzina in tekmovanja:
+            <tr>
+                <td>{{indeks}}</td>
+                <td>{{id_sezone}}</td>
+                <td>{{kraj}}</td>
+                <td>{{datum}}</td>
+                <td>{{dolzina}}</td>
+            </tr>
+            % end
+
+        </tbody>
+    </table>
+
+
+<form method="get" action="/">
+    <button class="w3-button w3-aqua">Nazaj</button>
+</form>
+
+
+</title>
+</head>
+<body>
+
+</body>
+</html>

@@ -1,0 +1,69 @@
+%rebase('osnova.html', naslov='Popravi podatke o tekmovanju')
+
+
+<h1 class="naslov">Uredi podatke o tekmovanju</h1>
+<p>
+    Vpiši indeks tekmovanja, ki ga nameravaš popraviti, ter nove podatke za to tekmovanje
+</p>
+
+<div>
+    <form method="POST" action="/admin/uredi_tekmovanje">
+        <table>
+            <tr>
+                <td>
+                    Indeks:
+                </td>
+                <td>
+                    <input type="text" name="indeks" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Novi podatki:
+                </th>
+            </tr>
+            <tr>
+                <td>
+                    Kraj:
+                </td>
+                <td>
+                    <input type="text" name="kraj" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Datum:
+                </td>
+                <td>
+                    <input type="text" name="datum" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Dolzina:
+                </td>
+                <td>
+                    <input type="text" name="dolzina" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td>
+                    <input type="submit" value="Uredi tekmovanje" name="uredi" class="w3-button w3-orange"/>
+                </td>
+            </tr>
+        </table>
+
+    </form>
+</div>
+
+<form method="get" action="/admin">
+    <button class="gumb">Na administratorsko stran</button>
+</form>

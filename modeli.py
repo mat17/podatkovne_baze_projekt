@@ -1,5 +1,4 @@
 import sqlite3
-import csv
 import datetime
 
 danes = datetime.datetime.now()
@@ -23,10 +22,9 @@ def vsiTekmovalci():
 def vseTekme():
     '''Vrne seznam vseh tekem, ki so vodene v evidenci.'''
     cur.execute('''
-        SELECT Tekmovanja.*, Sezona.leto
+        SELECT *
         FROM Tekmovanja
-        JOIN Sezona ON (Sezona.id = Tekmovanja.id_sezona)
-        ORDER BY Sezona.leto, Tekmovanja.kraj''')
+        ''')
     return cur.fetchall()
 
 def vseKategorije():
@@ -34,6 +32,25 @@ def vseKategorije():
     cur.execute('''
         SELECT *
         FROM Kategorije''')
+    return cur.fetchall()
+
+
+def vseSezone():
+    '''Vrne seznam vseh sezon, ki so vodene v evidenci.'''
+    cur.execute('''
+        SELECT *
+        FROM Sezona
+        ''')
+    return cur.fetchall()
+
+def vseTekmeVSezoni(indeks):
+    '''Vrne seznam vseh tekem v sezoni.'''
+    cur.execute('''
+        SELECT *
+        FROM Tekmovanja 
+        WHERE id_sezona = ?
+        ''',
+                (indeks,))
     return cur.fetchall()
 
 ##def vsiRezultati():
@@ -388,12 +405,12 @@ def dodajTekmovalca(ime, priimek, rd, spol, klub):
         WHERE ime = ? AND priimek = ? AND rojstni = ?''',
                 (ime, priimek, rd))
     preveri = cur.fetchone()
-    if preveri == None:
+    if preveri != None:
         return None
     else:
         cur.execute('''
             INSERT INTO Tekmovalci (ime, priimek, rojstni, spol, klub)
-            VALUES (?, ?, ?)''', (ime, priimek, rd, spol, klub))
+            VALUES (?, ?, ?, ?, ?)''', (ime, priimek, rd, spol, klub))
         con.commit()
 
 def posodobiTekmovalca(indeks, ime, priimek, rd, spol, klub):
@@ -419,7 +436,7 @@ def posodobiTekmovanje(indeks, kraj, datum, dolzina):
     '''Popravimo podatke o tekmovanju.'''
     cur.execute('''
         UPDATE Tekmovanja
-        SET kraj = ?, datum = ?, dolžina = ?
+        SET kraj = ?, datum = ?, dolzina = ?
         WHERE id = ?''',
                 (kraj, datum, dolzina, indeks))
     con.commit()
@@ -434,7 +451,7 @@ def dodajRezultatID(id_tekmovalec, id_tekmovanje, cas, uvrstitev):
 
 def dodajRezultatOpisno(ime, priimek, kraj, dolzina, leto, cas, uvrstitev):
     id_tekmovalec = podatkiTekmovalec(ime, priimek)
-    idTekmovanje = poisciIDTekme(kraj, dolzina, leto)
+    idTekmovanje = isciIDTekme(kraj, dolzina, leto)
     dodajRezultatID(id_tekmovalec, idTekmovanje, cas, uvrstitev)
 
 def dodajSezono(leto):
@@ -451,8 +468,8 @@ def dodajTekmovalcaNaLestvico(id_sezona, id_tekmovalec):
     if poisciTekmovalcaNaLestvici(id_sezona, id_tekmovalec) == None:
         id_kategorija = kategorijaTekmovalca(id_tekmovalec, id_sezona)
         cur.execute('''
-            INSERT INTO Lestvica (id_sezona, id_tekmovalec, id_kategorija, st_tock_skupno, st_tock:kategorija)
-            VALUES (?, ?, ?, ?)''',
+            INSERT INTO Lestvica (id_sezona, id_tekmovalec, id_kategorija, st_tock_skupno, st_tock_kategorija)
+            VALUES (?, ?, ?, ?, ?)''',
                     (id_sezona, id_tekmovalec, id_kategorija, 0, 0))
         con.commit()
 
@@ -555,7 +572,7 @@ def posodobiUvrstitveSkupno(leto):
 # ta ukaz lahko zaženemo po vsaki tekmi.
 def posodobiUvrstitve(leto):
     posodobiUvrstitveKategorija(leto)
-    posodobiUvrstitveLeto(leto)
+    posodobiUvrstitveSkupno(leto)
 
 
 # mogoče bi bilo celo bolj pametno voditi moške in ženske rezultate ločeno

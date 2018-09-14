@@ -1,0 +1,85 @@
+%rebase('osnova.html', naslov='Popravi podatke o tekmovalcu')
+
+
+<h1 class="naslov">Uredi podatke o tekmovalcu</h1>
+<p>
+    Vpiši indeks tekmovalca, ki ga nameravaš popraviti, ter nove podatke za tega tekmovalca
+</p>
+
+<div>
+    <form method="POST" action="/admin/uredi_tekmovalca">
+        <table>
+            <tr>
+                <td>
+                    Indeks:
+                </td>
+                <td>
+                    <input type="text" name="indeks" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Novi podatki:
+                </th>
+            </tr>
+            <tr>
+                <td>
+                    Ime:
+                </td>
+                <td>
+                    <input type="text" name="ime" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Priimek:
+                </td>
+                <td>
+                    <input type="text" name="priimek" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Rojstni datum:
+                </td>
+                <td>
+                    <input type="text" name="rojstni" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Spol (M/Ž):
+                </td>
+                <td>
+                    <input type="text" name="spol" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Klub:
+                </td>
+                <td>
+                    <input type="text" name="klub" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td>
+                    <input type="submit" value="Uredi podatke o tekmovalcu" name="uredi" class="w3-button w3-orange"/>
+                </td>
+            </tr>
+        </table>
+
+    </form>
+</div>
+
+<form method="get" action="/admin">
+    <button class="gumb">Na administratorsko stran</button>
+</form>

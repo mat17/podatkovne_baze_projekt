@@ -1,0 +1,51 @@
+%rebase('osnova.html', naslov='Novo tekmovanje')
+
+
+<h1 class="naslov">Dodaj tekmovanje</h1>
+<p>
+    Vpiši podatke za tekmovanje
+</p>
+
+<div>
+    <form method="POST" action="/admin/novo_tekmovanje">
+        <table>
+            <tr>
+                <td>
+                    Kraj:
+                </td>
+                <td>
+                    <input type="text" name="kraj" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Datum:
+                </td>
+                <td>
+                    <input type="text" name="datum" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Dolzina:
+                </td>
+                <td>
+                    <input type="text" name="dolzina" value=""/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td>
+                    <input type="submit" value="Dodaj novo tekmovanje" name="dodaj" class="w3-button w3-orange"/>
+                </td>
+            </tr>
+        </table>
+
+    </form>
+</div>
+
+<form method="get" action="/admin">
+    <button class="gumb">Na administratorsko stran</button>
+</form>
