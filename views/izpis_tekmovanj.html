@@ -4,11 +4,10 @@
 <h1 class="w3-amber">Tekmovanja</h1>
 
 
-    <table id="tabele">
+    <table id="tabele" class="w3-table-all">
         <thead>
         <tr>
             <th scope="col">Indeks</th>
-            <th scope="col">Sezona</th>
             <th scope="col">Kraj</th>
             <th scope="col">Datum</th>
             <th scope="col">Dolžina</th>
@@ -16,10 +15,9 @@
         </thead>
         <tbody>
 
-            % for indeks, id_sezone, kraj, datum, dolzina in tekmovanja:
+            % for indeks, _, kraj, datum, dolzina in tekmovanja:
             <tr>
                 <td>{{indeks}}</td>
-                <td>{{id_sezone}}</td>
                 <td>{{kraj}}</td>
                 <td>{{datum}}</td>
                 <td>{{dolzina}}</td>
@@ -31,7 +29,7 @@
 
 
 <form method="get" action="/">
-    <button class="w3-button w3-aqua">Nazaj</button>
+    <button class="w3-button w3-amber">Nazaj</button>
 </form>
 
 

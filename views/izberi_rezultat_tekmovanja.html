@@ -1,0 +1,32 @@
+%rebase('osnova.html', naslov='Iskanje rezultata')
+
+
+<h1 class="w3-amber">Iskanje rezultata</h1>
+
+<p>
+    Poišči vse rezultate v želeni sezoni.
+</p>
+
+
+<div>
+    <form method="POST" action="/rezultati_tekmovanja/določena_sezona">
+        <table>
+            <tr>
+                <select name="id_tekmovanja">
+                    %for id, _, kraj, datum, dolzina  in tekme:
+                    <option value="{{id}}">{{datum[0:4]}} {{kraj}} {{dolzina}}km</option>
+                    %end
+                </select>
+            </tr>
+            <tr>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="submit" value="Išči!" name="poisci" class="w3-button w3-grey"/>
+            </tr>
+        </table>
+
+    </form>
+</div>
+<br>
+<form method="get" action="/">
+    <button class="w3-button w3-amber">Nazaj</button>
+</form>
