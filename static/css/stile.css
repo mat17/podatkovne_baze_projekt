@@ -1,0 +1,82 @@
+span {
+    margin: 0 10px;
+}
+
+h1 {
+	padding-left: 10px;
+}
+
+h2 {
+	font-weight: bold;
+	font-size: 2em;
+}
+
+/* all table headers */
+table th {
+	background: #FFEFC1;
+}
+
+.topnav {
+	text-align: right;
+}
+.topnav a {
+	text-decoration: none;
+}
+
+.topnav a:hover {
+	color: #FFC20E;
+}
+
+.element{
+	width: 100%;
+	background: #FFF7DF;
+	border: 2px solid #FFF2CD;
+	border-radius: 25px;
+	margin-top: 20px;
+	padding-left: 10px;
+}
+
+.element a:hover {
+	color: #826307
+}
+
+.w3-button {
+	border-radius: 5px;
+}
+
+#tabele2 {
+	border-collapse: collapse;
+	border: 1px solid black;
+}
+
+/* cell */
+#tabele2 td { 
+	border-collapse: collapse;
+ 	border: none;
+ 	padding: 5px;
+}
+
+/* header */
+#tabele2 th { 
+	border-collapse: collapse;
+ 	border: none;
+ 	padding: 5px;
+}	
+
+/* row */
+#tabele2 tr {
+ 	border: 1px solid #F1F1F1;
+}	
+
+.elementAdmin{
+	width: 100%;
+	background: rgb(255, 99, 71, 0.1);
+	border: 2px solid rgb(255, 99, 71);
+	border-radius: 25px;
+	margin-top: 20px;
+	padding-left: 10px;
+}
+
+.elementAdmin a:hover {
+	color: hsl(0, 100%, 25%);
+}
