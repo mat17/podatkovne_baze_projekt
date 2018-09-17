@@ -1,26 +1,13 @@
 --
--- File generated with SQLiteStudio v3.1.1 on Mon Sep 17 12:03:36 2018
+-- File generated with SQLiteStudio v3.1.1 on Mon Sep 17 13:31:17 2018
 --
 -- Text encoding used: System
 --
 PRAGMA foreign_keys = off;
 BEGIN TRANSACTION;
 
--- Table: Kategorije
-CREATE TABLE Kategorije (id INTEGER PRIMARY KEY ASC AUTOINCREMENT, spodnja_meja INTEGER NOT NULL, zgornja_meja INTEGER NOT NULL, spol CHAR NOT NULL, oznaka CHAR);
-INSERT INTO Kategorije (id, spodnja_meja, zgornja_meja, spol, oznaka) VALUES (1, 0, 18, 'Ž', 'Ž (0-18)');
-INSERT INTO Kategorije (id, spodnja_meja, zgornja_meja, spol, oznaka) VALUES (2, 19, 35, 'Ž', 'Ž (19-35)');
-INSERT INTO Kategorije (id, spodnja_meja, zgornja_meja, spol, oznaka) VALUES (3, 36, 50, 'Ž', 'Ž (36-50)');
-INSERT INTO Kategorije (id, spodnja_meja, zgornja_meja, spol, oznaka) VALUES (4, 51, 65, 'Ž', 'Ž (51-65)');
-INSERT INTO Kategorije (id, spodnja_meja, zgornja_meja, spol, oznaka) VALUES (5, 66, 130, 'Ž', 'Ž (66-)');
-INSERT INTO Kategorije (id, spodnja_meja, zgornja_meja, spol, oznaka) VALUES (6, 0, 18, 'M', 'M (0-18)');
-INSERT INTO Kategorije (id, spodnja_meja, zgornja_meja, spol, oznaka) VALUES (7, 19, 35, 'M', 'M (19-35)');
-INSERT INTO Kategorije (id, spodnja_meja, zgornja_meja, spol, oznaka) VALUES (8, 36, 50, 'M', 'M (36-50)');
-INSERT INTO Kategorije (id, spodnja_meja, zgornja_meja, spol, oznaka) VALUES (9, 51, 65, 'M', 'M (51-65)');
-INSERT INTO Kategorije (id, spodnja_meja, zgornja_meja, spol, oznaka) VALUES (10, 66, 130, 'M', 'M (66-)');
-
 -- Table: Lestvica
-CREATE TABLE Lestvica (id INTEGER PRIMARY KEY ASC AUTOINCREMENT, id_sezona REFERENCES Sezona (id), id_tekmovalec REFERENCES Tekmovalci (id), id_kategorija REFERENCES Kategorije (id), st_tock_skupno INTEGER, st_tock_kategorija INTEGER, uvrstitev_skupno INTEGER, uvrstitev_v_kategoriji INTEGER);
+CREATE TABLE Lestvica (id INTEGER PRIMARY KEY ASC AUTOINCREMENT, id_sezona REFERENCES Sezona (id), id_tekmovalec REFERENCES Tekmovalci (id), id_kategorija NOT NULL, st_tock_skupno INTEGER, st_tock_kategorija INTEGER, uvrstitev_skupno INTEGER, uvrstitev_v_kategoriji INTEGER);
 INSERT INTO Lestvica (id, id_sezona, id_tekmovalec, id_kategorija, st_tock_skupno, st_tock_kategorija, uvrstitev_skupno, uvrstitev_v_kategoriji) VALUES (4, 1, 1, 3, 6, 46, 55, 9);
 INSERT INTO Lestvica (id, id_sezona, id_tekmovalec, id_kategorija, st_tock_skupno, st_tock_kategorija, uvrstitev_skupno, uvrstitev_v_kategoriji) VALUES (5, 1, 2, 5, 0, 141, 81, 1);
 INSERT INTO Lestvica (id, id_sezona, id_tekmovalec, id_kategorija, st_tock_skupno, st_tock_kategorija, uvrstitev_skupno, uvrstitev_v_kategoriji) VALUES (6, 1, 3, 2, 0, 38, 81, 14);
@@ -3356,19 +3343,6 @@ INSERT INTO Tekmovanja (id, id_sezona, kraj, datum, dolzina) VALUES (17, 2, 'Kob
 INSERT INTO Tekmovanja (id, id_sezona, kraj, datum, dolzina) VALUES (18, 2, 'Sežana', '2017-08-28', 7.5);
 INSERT INTO Tekmovanja (id, id_sezona, kraj, datum, dolzina) VALUES (19, 2, 'Bovec', '2017-09-21', 21.1);
 INSERT INTO Tekmovanja (id, id_sezona, kraj, datum, dolzina) VALUES (20, 2, 'Štanjel', '2017-12-13', 9);
-
--- Table: Tockovanje
-CREATE TABLE Tockovanje (id INTEGER PRIMARY KEY ASC AUTOINCREMENT, uvrstitev INTEGER NOT NULL, st_tock INTEGER NOT NULL);
-INSERT INTO Tockovanje (id, uvrstitev, st_tock) VALUES (1, 1, 25);
-INSERT INTO Tockovanje (id, uvrstitev, st_tock) VALUES (2, 2, 18);
-INSERT INTO Tockovanje (id, uvrstitev, st_tock) VALUES (3, 3, 15);
-INSERT INTO Tockovanje (id, uvrstitev, st_tock) VALUES (4, 4, 12);
-INSERT INTO Tockovanje (id, uvrstitev, st_tock) VALUES (5, 5, 10);
-INSERT INTO Tockovanje (id, uvrstitev, st_tock) VALUES (6, 6, 8);
-INSERT INTO Tockovanje (id, uvrstitev, st_tock) VALUES (7, 7, 6);
-INSERT INTO Tockovanje (id, uvrstitev, st_tock) VALUES (8, 8, 4);
-INSERT INTO Tockovanje (id, uvrstitev, st_tock) VALUES (9, 9, 2);
-INSERT INTO Tockovanje (id, uvrstitev, st_tock) VALUES (10, 10, 1);
 
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;

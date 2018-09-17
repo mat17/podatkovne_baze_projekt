@@ -8,9 +8,12 @@ con = sqlite3.connect(BAZA)
 cur = con.cursor()
 cur.execute("PRAGMA foreign_keys = ON")
 
+########## TOCKOVANJE & KATEGORIJE #################
+
+tockovanje = {1:25, 2:18, 3:15, 4:12, 5:10, 6:8, 7:6, 8:4, 9:2, 10:1}
+kategorije = {1:[0,18,'Ž'], 2:[18,35,'Ž'], 3:[36,50,'Ž'], 4:[51,65,'Ž'], 5:[66,130,'Ž'], 6:[0,18,'M'], 7:[18,35,'M'], 8:[36,50,'M'], 9:[51,65,'M'], 10:[66,130,'M']}
 
 ########## POIZVEDBE ##################
-
 
 def vsiTekmovalci():
     '''Vrne vse podatke o vseh tekmovalcih.'''
@@ -27,21 +30,27 @@ def vseTekme():
         ''')
     return cur.fetchall()
 
-def vseKategorije():
-    '''Vrne seznam kategorij.'''
-    cur.execute('''
-        SELECT *
-        FROM Kategorije''')
-    return cur.fetchall()
-
-
 def vseSezone():
     '''Vrne seznam vseh sezon, ki so vodene v evidenci.'''
+    vse = set()
     cur.execute('''
-        SELECT *
-        FROM Sezona
+        SELECT datum
+        FROM Tekmovanja
         ''')
-    return cur.fetchall()
+    for datum in cur.fetchall():
+        vse.add(int(datum[0][0:4]))
+    vse = list(vse)
+    vse.sort()
+    return list(enumerate(vse,1))
+
+def vseKategorije():
+    '''Vrne indeks, spodnjo, zgornjo mejo, spol in oznako kategorije'''
+    vrni = []
+    for i in range(1,11):
+        vrni.append((i,kategorije[i][0],kategorije[i][1],kategorije[i][2], kategorije[i][2] + " ("+str(kategorije[i][0])+'-'+str(kategorije[i][1])+')'))
+    return vrni
+#for a,b,c,d,_ in vseKategorije():
+    
 
 def vseTekmeVSezoni(indeks):
     '''Vrne seznam vseh tekem v sezoni.'''
@@ -114,9 +123,8 @@ def isciIDTekme(kraj, dolzina, leto):
     cur.execute('''
         SELECT Tekmovanja.id
         FROM Tekmovanja
-        JOIN Sezona ON (Sezona.id = Tekmovanja.id_sezona)
-        WHERE LOWER(Tekmovanja.kraj) = LOWER(?) AND Tekmovanja.dolzina = ? AND Sezona.leto = ?''',
-                (kraj, dolzina, leto, ))
+        WHERE LOWER(kraj) = LOWER(?) AND dolzina = ? AND datum LIKE ?''',
+                (kraj, dolzina, '%'+str(leto)+'%', ))
     vrni = cur.fetchone()
     if vrni == None:
         return None
@@ -127,30 +135,37 @@ def isciIDTekme(kraj, dolzina, leto):
 def vsiRezultatiTekmovanja(indeks):
     '''Poisce vse rezultate dosezene na tem tekmovanju'''
     cur.execute('''
-      SELECT Kategorije.oznaka, Rezultati.čas, Tekmovalci.ime, Tekmovalci.priimek
+      SELECT Lestvica.id_kategorija, Rezultati.čas, Tekmovalci.ime, Tekmovalci.priimek
       FROM Rezultati
       JOIN Tekmovanja ON (Tekmovanja.id = Rezultati.id_tekmovanje)
       JOIN Tekmovalci ON (Tekmovalci.id = Rezultati.id_tekmovalec)
       JOIN Lestvica ON (Lestvica.id_tekmovalec = Tekmovalci.id AND Lestvica.id_sezona = Tekmovanja.id_sezona)
-      JOIN Kategorije ON (Kategorije.id = Lestvica.id_kategorija)
       WHERE Rezultati.id_tekmovanje = ?
       ORDER BY Rezultati.čas''',
                 (indeks,))
-    return cur.fetchall()
+    rezultati = cur.fetchall()
+    for i in range(len(rezultati)):
+        a,b,c,d = rezultati[i]
+        rezultati[i] = kategorije[a][2] + " ("+str(kategorije[a][0])+'-'+str(kategorije[a][1])+')',b,c,d
+    return rezultati
+        
 
 def rezultatiTekmovanjaKategorija(id_tekmovanja, id_kategorije):
-    '''Poisce vse rezultate dosezene na tem tekmovanju'''
+    '''Poisce vse rezultate v dani kategoriji dosezene na tem tekmovanju'''
     cur.execute('''
-      SELECT Kategorije.oznaka, Rezultati.čas, Tekmovalci.ime, Tekmovalci.priimek
+      SELECT Lestvica.id_kategorija, Rezultati.čas, Tekmovalci.ime, Tekmovalci.priimek
       FROM Rezultati
       JOIN Tekmovanja ON (Tekmovanja.id = Rezultati.id_tekmovanje)
       JOIN Tekmovalci ON (Tekmovalci.id = Rezultati.id_tekmovalec)
       JOIN Lestvica ON (Lestvica.id_tekmovalec = Tekmovalci.id AND Lestvica.id_sezona = Tekmovanja.id_sezona)
-      JOIN Kategorije ON (Kategorije.id = Lestvica.id_kategorija)
-      WHERE Rezultati.id_tekmovanje = ? AND Kategorije.id = ?
+      WHERE Rezultati.id_tekmovanje = ? AND Lestvica.id_kategorija = ?
       ORDER BY Rezultati.čas''',
                 (id_tekmovanja, id_kategorije))
-    return cur.fetchall()
+    rezultati = cur.fetchall()
+    for i in range(len(rezultati)):
+        a,b,c,d = rezultati[i]
+        rezultati[i] = kategorije[a][2] + " ("+str(kategorije[a][0])+'-'+str(kategorije[a][1])+')',b,c,d
+    return rezultati
 
 ##def datumTekme(indeks):
 ##    '''Za id tekme vrne [leto, mesec, dan] dogodka.'''
@@ -164,34 +179,23 @@ def rezultatiTekmovanjaKategorija(id_tekmovanja, id_kategorije):
 def letoTekme(indeks):
     '''Vrne letnico sezone, v kateri poteka dano tekmovanje.'''
     cur.execute('''
-        SELECT Sezona.leto
+        SELECT datum
         FROM Tekmovanja
-        JOIN Sezona ON (Sezona.id = Tekmovanja.id_sezona)
         WHERE Tekmovanja.id = ?''',
                 (indeks,))
-    return cur.fetchone()[0]
+    return int(cur.fetchone()[0][0:4])
 
 def letoSezone(indeks):
     '''Vrne letnico sezone, ki ustreza danemu indeksu.'''
-    cur.execute('''
-        SELECT leto
-        FROM Sezona
-        WHERE id = ?''',
-                (indeks,))
-    return cur.fetchone()[0]
+    for a,b in vseSezone():
+        if a == indeks:
+            return b
 
 def indeksSezone(letnica):
     '''Za letnico sezone nam vrne indeks, pod katerim to sezono vodimo v evidenci.'''
-    cur.execute('''
-        SELECT id
-        FROM Sezona
-        WHERE leto = ?''',
-                (letnica,))
-    indeks = cur.fetchone()
-    if indeks == None:
-        return None
-    else:
-        return indeks[0]
+    for a,b in vseSezone():
+        if b == letnica:
+            return a
 
 ##def starostTekmovalca(idTekmovalca, idTekme):
 ##    '''Vrne starost tekmovalca na dan tekme.'''
@@ -290,12 +294,7 @@ def uvrstitevPoKategoriji(idTekme,idKategorije):
         WHERE id = ?''',
                 (idTekme,))
     id_sezone = cur.fetchone()[0] #id sezone, ki ga rabimo za dolocitev leta tekme
-    cur.execute('''
-        SELECT leto
-        FROM Sezona
-        WHERE id = ?''',
-                (id_sezone,))
-    leto = cur.fetchone()[0] # leto tekme, ki ga rabimo za dolocitev kategorije, v kateri se nahajajo tekmovalci
+    leto = letoSezone(id_sezone) # leto tekme, ki ga rabimo za dolocitev kategorije, v kateri se nahajajo tekmovalci
     cur.execute('''
         SELECT id_tekmovalec, čas
         FROM Rezultati
@@ -341,12 +340,7 @@ def uvrstitviTekmovalca(idTekmovalca, idTekme):
         WHERE id = ?''',
                 (idTekme,))
     id_sezone = cur.fetchone()[0] #id sezone, ki ga rabimo za dolocitev leta tekme
-    cur.execute('''
-        SELECT leto
-        FROM Sezona
-        WHERE id = ?''',
-                (id_sezone,))
-    leto = cur.fetchone()[0] # leto tekme, ki ga rabimo za dolocitev kategorije, v kateri se nahajajo tekmovalci
+    leto = letoSezone(id_sezone) # leto tekme, ki ga rabimo za dolocitev kategorije, v kateri se nahajajo tekmovalci
     idKategorije = kategorijaTekmovalca(vsi_casi[-1][0],leto)
     i = 0
     while i < len(vsi_casi):
@@ -379,24 +373,12 @@ def dosezeneTockeTekmovalcaVSezoni(idTekmovalca, idSezone):
     tocke_kategorija = []
     uvrstitve = uvrstitveTekmovalcaVSezoni(idTekmovalca, idSezone)
     for a,b in uvrstitve:
-        cur.execute('''
-            SELECT st_tock
-            FROM Točkovanje
-            WHERE uvrstitev = ?''',
-                    (a,))
-        tocke = cur.fetchone()
-        if tocke == None:
-            tocke_skupno.append(0)
+        if a in tockovanje.keys():
+            tocke_skupno.append(tockovanje[a])
         else:
             tocke_skupno.append(tocke[0])
-        cur.execute('''
-            SELECT st_tock
-            FROM Točkovanje
-            WHERE uvrstitev = ?''',
-                    (b,))
-        tocke = cur.fetchone()
-        if tocke == None:
-            tocke_kategorija.append(0)
+        if b in tockovanje.keys():
+            tocke_skupno.append(tockovanje[a])
         else:
             tocke_kategorija.append(tocke[0])
     return sum(tocke_skupno), sum(tocke_kategorija)
@@ -509,15 +491,6 @@ def dodajRezultatOpisno(ime, priimek, kraj, dolzina, leto, cas):
     idTekmovanje = isciIDTekme(kraj, dolzina, leto)
     dodajRezultatID(id_tekmovalec, idTekmovanje, cas)
 
-def dodajSezono(leto):
-    '''Dodamo novo sezono.'''
-    if indeksSezone(leto) == None:
-        cur.execute('''
-            INSERT INTO Sezona (leto)
-            VALUES (?)''',
-                    (leto,))
-        con.commit()
-
 def dodajTekmovalcaNaLestvico(id_sezona, id_tekmovalec):
     '''Dodamo novega tekmovalca na lestvico.'''
     if poisciTekmovalcaNaLestvici(id_sezona, id_tekmovalec) == None:
@@ -532,11 +505,8 @@ def dodajVseTekmovalceNaLestvico():
     '''Doda vse tekmovalce iz baze tekmovalci v tabelo lestvica.'''
     # To bomo potrebovali samo 'prvič', ker je naša tabela 'lestvica' še prazna
     sezone = []
-    cur.execute('''
-        SELECT id
-        FROM Sezona''')
-    for i in cur.fetchall():
-        sezone.append(i[0])
+    for a,b in vseSezone():
+        sezone.append(a)
     indeksi = []
     cur.execute('''
         SELECT id
